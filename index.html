@@ -1,0 +1,145 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard RPP – Granatowa Wersja (Responsive z Newsami)</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Obecne i oczekiwane stopy procentowe</h1>
+
+  <div class="dashboard">
+    <!-- CALENDAR (LEFT) -->
+    <div class="column column-left">
+      <div class="widget" id="calendarWidget">
+        <h2>Harmonogram posiedzeń RPP</h2>
+        <p class="subtext">Dzisiejsza data: <strong id="todayDate"></strong></p>
+        <div class="calendar" id="calendar">
+          <div class="header">
+            <button id="prev">‹</button>
+            <div class="month-year" id="monthYear"></div>
+            <button id="next">›</button>
+          </div>
+          <div class="days" id="daysHeader"></div>
+          <div class="days" id="dates"></div>
+        </div>
+        <div class="legend"><span class="legend-box"></span><span>Dzień posiedzenia RPP</span></div>
+      </div>
+    </div>
+
+    <!-- RATE & WIBOR (CENTER) -->
+    <div class="column column-center">
+      <div class="widget stat-widget" id="rateWidget">
+        <h2>Stopa referencyjna NBP</h2>
+        <div class="rate-value"><span class="value-unit">%</span><span class="value-num" id="rateValue">Loading...</span></div>
+      </div>
+      <div class="widget stat-widget" id="wiborWidget">
+        <h2>Stopa WIBOR 3M</h2>
+        <div class="wibor-value"><span class="value-unit">%</span><span class="value-num" id="wiborValue">Loading...</span></div>
+      </div>
+    </div>
+
+    <!-- FRA & NEWS (RIGHT) -->
+    <div class="column column-right">
+      <div class="widget" id="fraWidget">
+        <h2>Szacowany przez rynek finansowy <br> poziom WIBOR 3M:</h2>
+        <button class="fra-prev" id="fraPrev">‹</button>
+        <div class="fra-list" id="fraList">
+          <div class="fra-item">
+            <div class="label">do 4 miesięcy</div>
+            <div class="percent">%</div>
+            <div class="value" id="fra1x4">Loading...</div>
+          </div>
+          <div class="fra-item">
+            <div class="label">do 6 miesięcy</div>
+            <div class="percent">%</div>
+            <div class="value" id="fra3x6">Loading...</div>
+          </div>
+          <div class="fra-item">
+            <div class="label">do 9 miesięcy</div>
+            <div class="percent">%</div>
+            <div class="value" id="fra6x9">Loading...</div>
+          </div>
+          <div class="fra-item">
+            <div class="label">do 12 miesięcy</div>
+            <div class="percent">%</div>
+            <div class="value" id="fra9x12">Loading...</div>
+          </div>
+        </div>
+        <button class="fra-next" id="fraNext">›</button>
+      </div>
+
+      <!-- NOWY WIDGET Z NEWSAMI -->
+      <div class="widget" id="newsWidget">
+        <h2>Najnowsze artykuły o RPP i NBP</h2>
+        <div id="newsList" class="news-list">
+          <div class="news-item">
+            <a href="https://news.google.com/topics/CAAqJAgKIh5DQkFTRUFvS0wyMHZNR280ZVRaZmNoSUNjR3dvQUFQAQ?hl=pl&gl=PL&ceid=PL%3Apl" target="_blank">Adam Glapiński</a>
+          </div>
+          <div class="news-item">
+            <a href="https://news.google.com/search?for=rada+polityki+pieni%C4%99%C5%BCnej&hl=pl&gl=PL&ceid=PL%3Apl" target="_blank">Rada Polityki Pieniężnej</a>
+          </div>
+          <div class="news-item">
+            <a href="https://news.google.com/search?for=stopy+procentowe&hl=pl&gl=PL&ceid=PL%3Apl" target="_blank">Stopy procentowe</a>
+          </div>
+          <div class="news-item">
+            <a href="https://news.google.com/search?for=wibor&hl=pl&gl=PL&ceid=PL%3Apl" target="_blank">WIBOR</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    Źródła danych: 
+    <a href="https://nbp.pl/polityka-pieniezna/rada-polityki-pienieznej/harmonogram-rpp/" target="_blank">Harmonogram RPP</a> |
+    <a href="https://nbp.pl/polityka-pieniezna/decyzje-rpp/podstawowe-stopy-procentowe-nbp/" target="_blank">Stopa referencyjna NBP</a> |
+    <a href="https://stooq.pl/q/?s=plopln3m" target="_blank">WIBOR 3M</a> |
+    <a href="https://www.patria.cz/" target="_blank">Stawki FRA</a> |
+    <a href="https://news.google.com/" target="_blank">Artykuły</a>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
