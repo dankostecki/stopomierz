@@ -1,0 +1,42 @@
+name: Update FRA rates
+
+on:
+  workflow_dispatch:       # ręczne uruchomienie w UI
+  schedule:
+    # Zima (listopad, grudzień, styczeń, luty): 09:00 CET = 08:00 UTC
+    - cron: '0 8 * 11,12,1,2 *'
+    # Lato (marzec–październik): 09:00 CEST = 07:00 UTC
+    - cron: '0 7 * 3-10 *'
+
+permissions:
+  contents: write
+
+jobs:
+  update-fra:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install requests beautifulsoup4
+
+      - name: Fetch and save FRA
+        run: python fetch_fra.py
+
+      - name: Commit & push JSON
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add fra_rates.json
+          git commit -m "Daily FRA update" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
