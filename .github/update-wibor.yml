@@ -1,0 +1,42 @@
+name: Update WIBOR 3M rate
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 13 * 11,12,1,2 *'
+    - cron: '0 12 * 3-10 *'
+
+permissions:
+  contents: write
+
+jobs:
+  update-wibor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0     # <–– dokładnie to dodaj
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install deps
+        run: |
+          pip install --upgrade pip
+          pip install requests beautifulsoup4
+
+      - name: Fetch WIBOR 3M
+        run: python fetch_wibor.py
+
+      - name: Commit & push JSON
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add wibor_rates.json
+          git commit -m "Daily WIBOR 3M update" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
