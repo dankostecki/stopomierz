@@ -3,10 +3,10 @@ name: Update FRA rates
 on:
   workflow_dispatch:       # ręczne uruchomienie w UI
   schedule:
-    # Zima (listopad, grudzień, styczeń, luty): 09:00 CET = 08:00 UTC
-    - cron: '0 8 * 11,12,1,2 *'
-    # Lato (marzec–październik): 09:00 CEST = 07:00 UTC
-    - cron: '0 7 * 3-10 *'
+    # Zima (listopad, grudzień, styczeń, luty): 08:00 CET = 07:00 UTC
+    - cron: '0 7 * 11,12,1,2 *'
+    # Lato (marzec–październik): 08:00 CEST = 06:00 UTC
+    - cron: '0 6 * 3-10 *'
 
 permissions:
   contents: write
