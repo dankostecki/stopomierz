@@ -4,9 +4,9 @@ on:
   workflow_dispatch:    # pozwala odpalić ręcznie w UI
   schedule:
     # Zima (listopad–luty): 17:00 CET = 16:00 UTC
-    - cron: '0 16 * 11,12,1,2 *'
+    - cron: '0 5 * 11,12,1,2 *'
     # Lato (marzec–październik): 17:00 CEST = 15:00 UTC
-    - cron: '0 15 * 3-10 *'
+    - cron: '0 4 * 3-10 *'
 
 permissions:
   contents: write
