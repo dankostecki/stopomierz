@@ -52,6 +52,15 @@ document.getElementById('next').addEventListener('click', () => {
   renderCalendar(currentMonth, currentYear); 
 });
 
+// --- HELPER FUNCTIONS FOR DIFFERENCES ---
+function formatDifference(diff, label) {
+  const direction = diff >= 0 ? 'up' : 'down';
+  const arrow = diff >= 0 ? '▲' : '▼';
+  const value = Math.abs(diff).toFixed(2);
+  
+  return `<span class="difference-arrow ${direction}">${arrow}</span><span class="difference-value">${value} pp</span><span class="difference-label">${label}</span>`;
+}
+
 // --- FETCH DATA FROM JSON FILES ---
 async function fetchData() {
   try {
@@ -69,22 +78,42 @@ async function fetchData() {
     const wibor3m = parseFloat(wiborData["wibor_3m"]);
     document.getElementById('wiborValue').textContent = wibor3m.toFixed(2);
 
+    // Calculate and display WIBOR vs Reference Rate difference
+    const wiborDiff = wibor3m - referenceRate;
+    const wiborDiffEl = document.getElementById('wiborDifference');
+    wiborDiffEl.innerHTML = formatDifference(wiborDiff, 'vs stopa referencyjna');
+
     // Fetch FRA Rates
     const fraResponse = await fetch('fra_rates.json');
     if (!fraResponse.ok) throw new Error('Failed to fetch fra_rates.json');
     const fraData = await fraResponse.json();
-    document.getElementById('fra1x4').textContent = parseFloat(fraData["1x4"].replace(',', '.')).toFixed(3);
-    document.getElementById('fra3x6').textContent = parseFloat(fraData["3x6"].replace(',', '.')).toFixed(3);
-    document.getElementById('fra6x9').textContent = parseFloat(fraData["6x9"].replace(',', '.')).toFixed(3);
-    document.getElementById('fra9x12').textContent = parseFloat(fraData["9x12"].replace(',', '.')).toFixed(3);
+    
+    // Parse and display FRA rates with differences
+    const fraRates = {
+      '1x4': parseFloat(fraData["1x4"].replace(',', '.')),
+      '3x6': parseFloat(fraData["3x6"].replace(',', '.')),
+      '6x9': parseFloat(fraData["6x9"].replace(',', '.')),
+      '9x12': parseFloat(fraData["9x12"].replace(',', '.'))
+    };
+    
+    // Display FRA rates and differences
+    Object.entries(fraRates).forEach(([period, rate]) => {
+      document.getElementById(`fra${period}`).textContent = rate.toFixed(3);
+      
+      const diff = rate - wibor3m;
+      const diffEl = document.getElementById(`fra${period}Diff`);
+      diffEl.innerHTML = formatDifference(diff, 'vs WIBOR 3M');
+    });
+    
   } catch (error) {
     console.error('Error fetching data:', error);
     document.getElementById('rateValue').textContent = 'Error';
     document.getElementById('wiborValue').textContent = 'Error';
-    document.getElementById('fra1x4').textContent = 'Error';
-    document.getElementById('fra3x6').textContent = 'Error';
-    document.getElementById('fra6x9').textContent = 'Error';
-    document.getElementById('fra9x12').textContent = 'Error';
+    document.getElementById('wiborDifference').innerHTML = 'Error loading data';
+    ['1x4', '3x6', '6x9', '9x12'].forEach(period => {
+      document.getElementById(`fra${period}`).textContent = 'Error';
+      document.getElementById(`fra${period}Diff`).innerHTML = 'Error';
+    });
   }
 }
 
