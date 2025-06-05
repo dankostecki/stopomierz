@@ -171,18 +171,46 @@
 
   <script src="script.js"></script>
   
-  <!-- PWA Service Worker Registration -->
+  <!-- PWA Service Worker Registration with immediate activation -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js')
           .then((registration) => {
             console.log('SW registered: ', registration);
+            
+            // Sprawdź czy jest dostępna aktualizacja
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // Nowy SW jest zainstalowany - natychmiast go aktywuj
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                }
+              });
+            });
+            
+            // Odśwież stronę gdy nowy SW przejmie kontrolę
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+              console.log('New service worker activated - reloading page');
+              window.location.reload();
+            });
+            
+            // Sprawdź aktualizacje co 30 sekund
+            setInterval(() => {
+              registration.update();
+            }, 30000);
+            
           })
           .catch((registrationError) => {
             console.log('SW registration failed: ', registrationError);
           });
       });
+      
+      // Sprawdź od razu czy SW jest aktywny
+      if (navigator.serviceWorker.controller) {
+        console.log('Service Worker is controlling the page');
+      }
     }
   </script>
 </body>
