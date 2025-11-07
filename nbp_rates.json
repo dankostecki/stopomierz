@@ -1,11 +1,11 @@
 {
-  "data_publikacji": "2025-10-09",
-  "Stopa referencyjna": "4,50",
-  "Stopa lombardowa": "5,00",
-  "Stopa depozytowa": "4,00",
-  "Stopa redyskontowa weksli": "4,55",
-  "Stopa dyskontowa weksli": "4,60",
+  "data_publikacji": "2025-11-06",
+  "Stopa referencyjna": "4,25",
+  "Stopa lombardowa": "4,75",
+  "Stopa depozytowa": "3,75",
+  "Stopa redyskontowa weksli": "4,30",
+  "Stopa dyskontowa weksli": "4,35",
   "- od środków złotowych i środków w walutach obcych zgromadzonych na rachunkach bankowych, od środków uzyskanych z tytułu emisji papierów wartościowych ": "3,50",
   "- od środków uzyskanych z tytułu operacji repo i sell-buy-back oraz środków pozyskanych co najmniej na 2 lata": "0,00",
-  "Oprocentowanie środków rezerwy obowiązkowej": "4,50"
+  "Oprocentowanie środków rezerwy obowiązkowej": "4,25"
 }
